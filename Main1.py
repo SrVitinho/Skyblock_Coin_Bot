@@ -2,11 +2,32 @@ import requests
 from Classes import *
 from Classes.basic_item import BasicItem
 from Classes.especial_item import EspecialItem
+import matplotlib.pyplot as plt
+import time
 
 
-def main():
+def graph(especial_itens, itens, id, Case):
+    if Case:
+        for i in itens:
+            if i.id_name == id:
+                item = i
+    else:
+        for i in especial_itens:
+            if i.id_name == id:
+                item = i
+
+    x = item.price
+    y = item.time
+    plt.plot(x, y)
+    plt.ylabel('Preco')
+    plt.xlabel('Tempo')
+    plt.show()
+
+
+
+def itensregistration():
     param = {"key": "f823311c-be1f-44d5-81e9-2cae41baa0e2", "Name": "SrVitinho"}
-    r = requests.get('https://api.hypixel.net/skyblock/bazaar', param, timeout=2)
+    r = requests.get('https://api.hypixel.net/skyblock/bazaar', param, timeout=2)  # Request from API
     rc = r.json()
     names = (rc['products']).keys()
     itens = []
@@ -14,9 +35,9 @@ def main():
     error_normal = 0
     error_especial = 0
 
-    for i in names:
+    for i in names: # loop adição dos itens
         if not i.startswith('ENCHANTED_'):
-            try:
+            try:  # try - except para itens nao disponiveis
                 print('trying to add ' + i)
                 itens.append(BasicItem(rc, i))
                 print('Added')
@@ -37,7 +58,18 @@ def main():
 
     print("Final error_normal count:" + error_normal.__str__())
     print("Final error_especial count:" + error_especial.__str__())
+    return especial_itens, itens
+
+    # Sistema pra selecionar o item -> entrada de usuario
+
+    # Watcher -> alarme para avisar de preço -> discord
+
+
+
 
 
 if __name__ == "__main__":
-    main()
+    especial_itens, itens = itensregistration()
+    time.sleep(5)
+    graph(especial_itens, itens, 'INK_SACK:4', 1)
+
