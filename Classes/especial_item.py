@@ -11,3 +11,5 @@ class EspecialItem(BasicItem):
         else:
             self.volumeSold = dada_raw['products'][name]['quick_status']['buyMovingWeek']
             self.putosale = dada_raw['products'][name]['quick_status']['sellMovingWeek']
+
+

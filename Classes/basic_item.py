@@ -21,7 +21,3 @@ class BasicItem:
             self.time.append(datetime.now().strftime("%H:%M:%S"))
             self.order = dada_raw['products'][name]['buy_summary']['orders']
             self.amount = dada_raw['products'][name]['buy_summary']['amount']
-
-        def setprice(y):
-            x = datetime.now().strftime("%H:%M:%S")
-            self.pricetime.append(x, y)

@@ -4,6 +4,14 @@ from Classes.basic_item import BasicItem
 from Classes.especial_item import EspecialItem
 import matplotlib.pyplot as plt
 import time
+import threading as tdr
+
+
+def getsjson():
+    param = {"key": "f823311c-be1f-44d5-81e9-2cae41baa0e2", "Name": "SrVitinho"}
+    r = requests.get('https://api.hypixel.net/skyblock/bazaar', param, timeout=2)  # Request from API
+    rc = r.json()
+    return rc
 
 
 def graph(especial_itens, itens, id, Case):
@@ -24,14 +32,36 @@ def graph(especial_itens, itens, id, Case):
     plt.show()
 
 
+def getdata(i_name, e_name, itens): #needs correction
+    rc = getsjson()
+    for i in i_name:
+        summary = rc['products'][i_name]['buy_summary']
+        if type(summary) is list:
+             i_price = rc['products'][i_name]['buy_summary'][0]['pricePerUnit']
+        else:
+            i_price = rc['products'][i_name]['buy_summary']['pricePerUnit']
+
+
+
+    for i in e_name:
+        summary = rc['products'][e_name]['buy_summary']
+        if type(summary) is list:
+           e_price = rc['products'][e_name]['buy_summary'][0]['pricePerUnit']
+        else:
+           e_price = rc['products'][e_name]['buy_summary']['pricePerUnit']
+
+
+
+
+
 
 def itensregistration():
-    param = {"key": "f823311c-be1f-44d5-81e9-2cae41baa0e2", "Name": "SrVitinho"}
-    r = requests.get('https://api.hypixel.net/skyblock/bazaar', param, timeout=2)  # Request from API
-    rc = r.json()
+    rc = getsjson()
     names = (rc['products']).keys()
     itens = []
     especial_itens = []
+    itens_names = []
+    especial_names = []
     error_normal = 0
     error_especial = 0
 
@@ -40,6 +70,7 @@ def itensregistration():
             try:  # try - except para itens nao disponiveis
                 print('trying to add ' + i)
                 itens.append(BasicItem(rc, i))
+                itens_names = i
                 print('Added')
             except Exception as err:
                 print(type(err).__name__)
@@ -50,6 +81,7 @@ def itensregistration():
             try:
                 print('trying to add ' + i)
                 especial_itens.append(EspecialItem(rc, i))
+                especial_names
                 print('Added')
             except Exception as err:
                 print(type(err).__name__)
@@ -58,7 +90,7 @@ def itensregistration():
 
     print("Final error_normal count:" + error_normal.__str__())
     print("Final error_especial count:" + error_especial.__str__())
-    return especial_itens, itens
+    return especial_itens, itens, itens_names, especial_names
 
     # Sistema pra selecionar o item -> entrada de usuario
 
@@ -72,4 +104,6 @@ if __name__ == "__main__":
     especial_itens, itens = itensregistration()
     time.sleep(5)
     graph(especial_itens, itens, 'INK_SACK:4', 1)
+    while True:
+
 
