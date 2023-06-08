@@ -8,7 +8,10 @@ import threading as tdr
 import Keys
 from datetime import datetime
 
+from Database import Database
+
 watchers = {}
+db = Database(database="Skyblock", collection="Coin")
 
 
 def getsjson():
@@ -18,14 +21,14 @@ def getsjson():
     return rc
 
 
-def graph(especial_itens, itens, id, Case):
+def graph(especial_itens, itens, name, Case):
     if Case:
-        item = itens[id]
+        y, x = itens[name].get_prices()
     else:
-        especial_itens[id]
+        y, x = especial_itens[name].get_prices()
 
-    y = item.price
-    x = item.time
+    print(y)
+    print(x)
     plt.plot(x, y)
     plt.ylabel('Preco')
     plt.xlabel('Tempo')
@@ -41,28 +44,31 @@ def getdata(i_name, e_name, itens, e_itens):
             summary = rc['products'][i]['buy_summary']
             if type(summary) is list:
                 i_price = rc['products'][i]['buy_summary'][0]['pricePerUnit']
-                itens[i].price.append(i_price)
-                itens[i].time.append(datetime.now().strftime("%H:%M:%S"))
+                itens[i].price = i_price
+                itens[i].time = (datetime.now().strftime("%H:%M:%S"))
             else:
                 i_price = rc['products'][i]['buy_summary']['pricePerUnit']
-                itens[i].price.append(i_price)
-                itens[i].time.append(datetime.now().strftime("%H:%M:%S"))
+                itens[i].price = i_price
+                itens[i].time = (datetime.now().strftime("%H:%M:%S"))
+            itens[i].update_price()
 
         for i in e_name:
             summary = rc['products'][i]['buy_summary']
             if type(summary) is list:
                 e_price = rc['products'][i]['buy_summary'][0]['pricePerUnit']
-                e_itens[i].price.append(e_price)
-                e_itens[i].time.append(datetime.now().strftime("%H:%M:%S"))
+                e_itens[i].price = e_price
+                e_itens[i].time = (datetime.now().strftime("%H:%M:%S"))
             else:
                 e_price = rc['products'][i]['buy_summary']['pricePerUnit']
-                e_itens[i].price.append(e_price)
-                e_itens[i].time.append(datetime.now().strftime("%H:%M:%S"))
+                e_itens[i].price = e_price
+                e_itens[i].time = (datetime.now().strftime("%H:%M:%S"))
+            e_itens[i].update_price()
         checkwatcher(itens)
         time.sleep(5)
 
 
 def itensregistration():
+    db.resetDatabase()
     rc = getsjson()
     names = (rc['products']).keys()
     itens = {}
@@ -71,24 +77,28 @@ def itensregistration():
     especial_names = []
     error_normal = 0
     error_especial = 0
+    added_normal = 0
+    added_especial = 0
 
     for i in names:  # loop adição dos itens
-        if not i.startswith('ENCHANTED_'):
+        if not ((i.startswith('ENCHANTED_')) or (i.startswith('ENCHANTMENT_'))):
             try:  # try - except para itens nao disponiveis
                 print('trying to add ' + i)
-                itens[i] = BasicItem(rc, i)
+                itens[i] = BasicItem(rc, i, db)
                 itens_names.append(i)
+                added_normal += 1
                 print('Added')
             except Exception as err:
                 print(type(err).__name__)
                 print(err)
                 error_normal = error_normal + 1
 
-        if i.startswith('ENCHANTED_'):
+        if (i.startswith('ENCHANTED_')) or (i.startswith('ENCHANTMENT_')):
             try:
                 print('trying to add ' + i)
-                especial_itens[i] = EspecialItem(rc, i)
+                especial_itens[i] = EspecialItem(rc, i, db)
                 especial_names.append(i)
+                added_especial += 1
                 print('Added')
             except Exception as err:
                 print(type(err).__name__)
@@ -97,10 +107,12 @@ def itensregistration():
 
     print("Final error_normal count:" + error_normal.__str__())
     print("Final error_especial count:" + error_especial.__str__())
+    print("Final added_especial count:" + added_especial.__str__())
+    print("Final added_normal count:" + added_normal.__str__())
     return especial_itens, itens, itens_names, especial_names
 
 
-def menuwatchers():
+def menuwatchers():  # needs change -s
     print("1 -> Adicionar Watcher")
     print("2 -> Listar Watchers")
     print("3 -> Remover Watchers")
@@ -122,28 +134,28 @@ def menuwatchers():
         watchers = removewatcher(id_to_remove)
 
 
-def checkwatcher(itens):
+def checkwatcher(itens):  # needs change -s
     watchers_keys = watchers.keys()
     for i in watchers_keys:
         if watchers[i] <= itens[i].price[-1]:
             print('ALARME NO WATCHER: ' + i)
 
 
-def removewatcher(id):
+def removewatcher(id):  # needs change -s
     try:
         del watchers[id]
     except Exception as err:
         print('Item nao cadastrado dentro dos watchers')
 
 
-def addwatcher(id, price_target):
+def addwatcher(id, price_target):  # needs change -s
     try:
         watchers[id] = price_target
     except Exception as err:
         print('Item ja cadastrado')
 
 
-def listwatcher():
+def listwatcher():  # needs change -s
     for i in watchers:
         print(i + " com price target de " + str(watchers[i]))
 
@@ -166,7 +178,7 @@ if __name__ == "__main__":
         if decision == 1:
             print("Insira o ID do produto")
             name = input()
-            if name.startswith('ENCHANTED_'):
+            if name.startswith('ENCHANTED_') or (name.startswith('ENCHANTMENT_')):
                 graph(especial_itens, itens, name, 0)
             else:
                 graph(especial_itens, itens, name, 1)
