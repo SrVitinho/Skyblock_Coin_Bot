@@ -10,8 +10,6 @@ class BasicItem:
         summary = dada_raw['products'][name]['buy_summary']
         self.id = BasicItem.idcounter
         self.id_name = dada_raw['products'][name]['product_id']
-        #  self.price = []
-        #  self.time = []
         BasicItem.idcounter += 1
         if type(summary) is list:  # Caso nao possua muitas ofertas de compra não será lista
             self.name = name
@@ -39,15 +37,43 @@ class BasicItem:
         self.db.collection.insert_one(self.Basic_Json)
 
     def update_price(self):
-        query = {"name": self.name}
-        update = {"$push": {"price_history": self.price}}
-        self.db.collection.update_one(query, update)
-        update = {"$push": {"time_history": self.time}}
-        self.db.collection.update_one(query, update)
+        try:
+            query = {"name": self.name}
+            update = {"$push": {"price_history": self.price}}
+            self.db.collection.update_one(query, update)
+            update = {"$push": {"time_history": self.time}}
+            self.db.collection.update_one(query, update)
+        except Exception as err:
+            print(err)
+            print("Em casos de recadrasto é esperado um erro temporario")
 
     def get_prices(self):
-        y_raw = self.db.collection.find_one({'name': self.name})
         x_raw = self.db.collection.find_one({'name': self.name})
         x = x_raw['price_history']
-        y = y_raw['time_history']
+        y = x_raw['time_history']
         return x, y
+
+    def get_item(self):
+        item = self.db.collection.find_one({'name': self.name})
+        return item
+
+    def time_to_die(self):
+        res = self.db.collection.delete_one({"name": self.name})
+        print(f"Motorista deletado: {res.deleted_count} documento(s) deletados")
+
+    def update_cli(self):
+        query = {"name": self.name}
+        print("Insira os novos valores")
+        print("nome")
+        name = input()
+        print("preço")
+        self.price = input()
+        self.time = (datetime.now().strftime("%H:%M:%S"))
+        print("Ordens")
+        self.order = input()
+        print("Quantidade")
+        self.amount = input()
+        update = {"$set": {"name": name, "price": self.price, "time": self.time, "order": self.order, "amount": self.amount}}
+        self.db.collection.update_one(query, update)
+        self.name = name
+        print("Atualizado!")

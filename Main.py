@@ -27,8 +27,6 @@ def graph(especial_itens, itens, name, Case):
     else:
         y, x = especial_itens[name].get_prices()
 
-    print(y)
-    print(x)
     plt.plot(x, y)
     plt.ylabel('Preco')
     plt.xlabel('Tempo')
@@ -173,10 +171,13 @@ if __name__ == "__main__":
         print("1 -> Verificar um grafico")
         print("2 -> Menu Watcher")
         print("3 -> Cadastrar Itens (ATENCAO ESSA OPERACAO RESETA TODAS AS TABELAS e seus valores!)")
+        print("4 -> Verificar um item")
+        print("5 -> Apagar um item")
+        print("6 -> Atualizar um item")
         decision = int(input())
         print(decision)
         if decision == 1:
-            print("Insira o ID do produto")
+            print("Insira o nome do produto")
             name = input()
             if name.startswith('ENCHANTED_') or (name.startswith('ENCHANTMENT_')):
                 graph(especial_itens, itens, name, 0)
@@ -184,5 +185,29 @@ if __name__ == "__main__":
                 graph(especial_itens, itens, name, 1)
         elif decision == 2:
             menuwatchers()
+        elif decision == 3:
+            especial_itens, itens, itens_name, especial_itens_names = itensregistration()
+        elif decision == 4:
+            print("Insira o nome do produto")
+            name = input()
+            if not (name.startswith('ENCHANTED_') or (name.startswith('ENCHANTMENT_'))):
+                item = itens[name].get_item()
+            else:
+                item = especial_itens[name].get_item()
+            print(item)
+        elif decision == 5:
+            print("Insira o nome do produto")
+            name = input()
+            if not (name.startswith('ENCHANTED_') or (name.startswith('ENCHANTMENT_'))):
+                item = itens[name].time_to_die()
+            else:
+                item = especial_itens[name].time_to_die()
+        elif decision == 6:
+            print("Insira o nome do produto")
+            name = input()
+            if not (name.startswith('ENCHANTED_') or (name.startswith('ENCHANTMENT_'))):
+                item = itens[name].update_cli()
+            else:
+                item = especial_itens[name].update_cli()
         else:
             print('Entrada Invalida')
